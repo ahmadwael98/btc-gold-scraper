@@ -1,4 +1,4 @@
-name: Run BTC Scraper (Cached test 1)
+name: Run BTC Scraper (Cached clean)
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-          cache: "pip"   # ✅ caches python deps
+          cache: "pip"
 
       - name: Debug GSPREAD_JSON
         run: echo "${{ secrets.GSPREAD_JSON }}" | head -n 5
@@ -24,26 +24,23 @@ jobs:
         id: apt-cache
         uses: actions/cache@v3
         with:
-          path: |
-            .apt-cache
-            !.apt-cache/lock
-            !.apt-cache/partial
+          path: .apt-cache
           key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
           restore-keys: |
             ${{ runner.os }}-apt-
 
-      - name: Debug cache status
-        run: echo "Cache hit:${{ steps.apt-cache.outputs.cache-hit }}"
-
-      - name: Install Chrome + Chromedriver
+      - name: Install Chrome + Chromedriver (cached)
         run: |
           echo "google-chrome-stable" > apt-packages.txt
           echo "chromium-chromedriver" >> apt-packages.txt
 
           mkdir -p .apt-cache
           sudo apt-get update
-          sudo apt-get -o dir::cache::archives="$(pwd)/.apt-cache" install -y $(cat apt-packages.txt)
-          sudo ln -s /usr/bin/chromedriver /usr/local/bin/chromedriver
+          # Download only (no root-owned lock files in cache)
+          sudo apt-get -o dir::cache::archives="$(pwd)/.apt-cache" install --download-only -y $(cat apt-packages.txt)
+          # Install from cached debs
+          sudo dpkg -i .apt-cache/*.deb || sudo apt-get -f install -y
+          sudo ln -sf /usr/bin/chromedriver /usr/local/bin/chromedriver
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -52,4 +49,3 @@ jobs:
         env:
           GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
         run: python scraper.py
-          
