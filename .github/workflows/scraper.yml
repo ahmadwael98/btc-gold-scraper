@@ -24,7 +24,10 @@ jobs:
         id: apt-cache
         uses: actions/cache@v3
         with:
-          path: .apt-cache
+          path: |
+            .apt-cache
+            !.apt-cache/lock
+            !.apt-cache/partial
           key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
           restore-keys: |
             ${{ runner.os }}-apt-
@@ -36,9 +39,7 @@ jobs:
 
           mkdir -p .apt-cache
           sudo apt-get update
-          # Download only (no root-owned lock files in cache)
           sudo apt-get -o dir::cache::archives="$(pwd)/.apt-cache" install --download-only -y $(cat apt-packages.txt)
-          # Install from cached debs
           sudo dpkg -i .apt-cache/*.deb || sudo apt-get -f install -y
           sudo ln -sf /usr/bin/chromedriver /usr/local/bin/chromedriver
 
