@@ -1,9 +1,8 @@
-name: Run BTC Scraper 2
+name: Run BTC Scraper (Cached)
 
 on:
-  workflow_dispatch:      # manual run button
-  schedule:
-    - cron: "0 * * * *"   # every hour
+  workflow_dispatch:      # manual run
+
 
 jobs:
   run-scraper:
@@ -17,21 +16,29 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
+        cache: "pip"   # ✅ cache python packages
 
     - name: Debug GSPREAD_JSON
       run: echo "${{ secrets.GSPREAD_JSON }}" | head -n 5
 
+    - name: Cache APT packages
+      uses: actions/cache@v3
+      with:
+        path: /var/cache/apt/archives
+        key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-apt-
+
+    - name: Install Chrome + Chromedriver
+      run: |
+        echo "google-chrome-stable" > apt-packages.txt
+        echo "chromium-chromedriver" >> apt-packages.txt
+        sudo apt-get update
+        sudo apt-get install -y $(cat apt-packages.txt)
+        sudo ln -s /usr/bin/chromedriver /usr/local/bin/chromedriver
+
     - name: Install dependencies
       run: pip install -r requirements.txt
-
-    # 🚀 Much faster Chrome setup
-    - name: Setup Chrome
-      uses: browser-actions/setup-chrome@v1
-      with:
-        chrome-version: stable
-
-    - name: Setup Chromedriver
-      uses: nanasess/setup-chromedriver@v2
 
     - name: Run script
       env:
