@@ -30,6 +30,5 @@ jobs:
         install-chromedriver: true # Automatically installs a compatible ChromeDriver
         
     - name: Run tests with Selenium
-      run: |
-
-        run: python scraper.py
+    
+      run: python scraper.py
