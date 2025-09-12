@@ -1,4 +1,4 @@
-name: Run BTC Scraper
+name: Run BTC Scraper 2
 
 on:
   schedule:
