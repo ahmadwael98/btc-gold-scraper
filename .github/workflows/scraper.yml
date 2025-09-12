@@ -1,4 +1,4 @@
-name: Run BTC Scraper (Cached test)
+name: Run BTC Scraper (Cached test 1)
 
 on:
   workflow_dispatch:
@@ -8,40 +8,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-        cache: "pip"   # ✅ caches python deps
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"   # ✅ caches python deps
 
-    - name: Debug GSPREAD_JSON
-      run: echo "${{ secrets.GSPREAD_JSON }}" | head -n 5
+      - name: Debug GSPREAD_JSON
+        run: echo "${{ secrets.GSPREAD_JSON }}" | head -n 5
 
-    - name: Cache Chrome packages
-      uses: actions/cache@v3
-      with:
-        path: .apt-cache
-        key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-apt-
+      - name: Cache Chrome packages
+        id: apt-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            .apt-cache
+            !.apt-cache/lock
+            !.apt-cache/partial
+          key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-
 
-    - name: Install Chrome + Chromedriver
-      run: |
-        echo "google-chrome-stable" > apt-packages.txt
-        echo "chromium-chromedriver" >> apt-packages.txt
+      - name: Debug cache status
+        run: echo "Cache hit:${{ steps.apt-cache.outputs.cache-hit }}"
 
-        mkdir -p .apt-cache
-        sudo apt-get update
-        sudo apt-get -o dir::cache::archives="$(pwd)/.apt-cache" install -y $(cat apt-packages.txt)
-        sudo ln -s /usr/bin/chromedriver /usr/local/bin/chromedriver
+      - name: Install Chrome + Chromedriver
+        run: |
+          echo "google-chrome-stable" > apt-packages.txt
+          echo "chromium-chromedriver" >> apt-packages.txt
 
-    - name: Install dependencies
-      run: pip install -r requirements.txt
+          mkdir -p .apt-cache
+          sudo apt-get update
+          sudo apt-get -o dir::cache::archives="$(pwd)/.apt-cache" install -y $(cat apt-packages.txt)
+          sudo ln -s /usr/bin/chromedriver /usr/local/bin/chromedriver
 
-    - name: Run script
-      env:
-        GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
-      run: python scraper.py
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run script
+        env:
+          GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
+        run: python scraper.py
+          
