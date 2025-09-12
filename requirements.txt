@@ -1,0 +1,7 @@
+pandas
+beautifulsoup4
+requests
+gspread
+selenium
+openpyxl
+google-auth
