@@ -31,6 +31,5 @@ jobs:
         
     - name: Run tests with Selenium
       run: |
-        # Example test command
-        # This will use the cached Chrome and ChromeDriver
+
         run: python scraper.py
