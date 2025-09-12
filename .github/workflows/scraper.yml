@@ -3,7 +3,7 @@ name: Run BTC Scraper (Stable Chrome)
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *"  
+    - cron: "*/1 * * * *"  
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
@@ -30,7 +30,16 @@ jobs:
         with:
           chrome-version: 140
           install-chromedriver: true
+      # Set system timezone to Egypt (Cairo)
+      - name: Set timezone
+        run: sudo timedatectl set-timezone Africa/Cairo
 
+      # Debug installed versions and timezone
+      - name: Check Chrome, Driver & Timezone
+        run: |
+          google-chrome --version
+          chromedriver --version
+          date
       # Debug installed versions
       - name: Check Chrome & Driver
         run: |
