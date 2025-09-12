@@ -157,7 +157,7 @@ def main():
         ounce_dollar,
         Dollar_to_egp,
         avgblackmarket,
-        'GitHub'
+        'GitHub 2'
     ]
 
     wks1 = spread_sheet.worksheet('Sheet1')
