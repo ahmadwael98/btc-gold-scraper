@@ -29,7 +29,6 @@ jobs:
         with:
           chrome-version: 140
           install-chromedriver: true
-          chromedriver-version: 140
 
       # Debug installed versions
       - name: Check Chrome & Driver
@@ -39,6 +38,4 @@ jobs:
 
       # Run your scraper
       - name: Run scraper
-        env:
-          GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
         run: python scraper.py
