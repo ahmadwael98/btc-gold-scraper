@@ -19,18 +19,23 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
 
-
 def get_driver():
     chrome_path = os.getenv("CHROME_BIN", "/usr/bin/google-chrome")
-    driver_path = os.getenv("CHROMEDRIVER_BIN", "/usr/local/bin/chromedriver")
+    driver_path = os.getenv("CHROMEDRIVER_BIN", None)
 
     options = Options()
+    options.binary_location = chrome_path  # ✅ tell Selenium where Chrome is
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
-    service = Service(driver_path)
-    return webdriver.Chrome(service=service, options=options)
+    if driver_path:
+        service = Service(driver_path)
+        return webdriver.Chrome(service=service, options=options)
+    else:
+        # fallback: let Selenium try to find chromedriver automatically
+        return webdriver.Chrome(options=options)
+
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
