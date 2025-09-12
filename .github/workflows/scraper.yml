@@ -1,4 +1,4 @@
-name: Run BTC Scraper (Fast Chrome)
+name: Run BTC Scraper (Stable Chrome)
 
 on:
   workflow_dispatch:
@@ -8,26 +8,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout repo
       - uses: actions/checkout@v4
 
-      # Cache pip dependencies automatically
+      # Set up Python with caching
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: 'pip'
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: 'requirements.txt'
 
+      # Install dependencies
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # 🚀 Fast Chrome + Chromedriver install
+      # Install Chrome + ChromeDriver (pinned version 140 to avoid mismatch)
       - name: Set up Chrome
         uses: browser-actions/setup-chrome@v2
         with:
-          chrome-version: latest
+          chrome-version: 140
           install-chromedriver: true
+          chromedriver-version: 140
 
+      # Debug installed versions
+      - name: Check Chrome & Driver
+        run: |
+          google-chrome --version
+          chromedriver --version
+
+      # Run your scraper
       - name: Run scraper
         env:
           GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
