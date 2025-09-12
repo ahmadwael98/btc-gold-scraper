@@ -1,8 +1,7 @@
 name: Run BTC Scraper 2
 
 on:
-  schedule:
-    - cron: "0 * * * *"   # every hour
+  
   workflow_dispatch:      # manual run button
 
 jobs:
