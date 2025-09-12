@@ -2,51 +2,35 @@ name: Run BTC Scraper (Cached clean)
 
 on:
   workflow_dispatch:
-
 jobs:
-  run-scraper:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      
+    # Cache pip dependencies with built-in cache
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip' # Enables pip caching
+        cache-dependency-path: 'requirements.txt'
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-          cache: "pip"
-
-      - name: Debug GSPREAD_JSON
-        run: echo "${{ secrets.GSPREAD_JSON }}" | head -n 5
-
-      - name: Cache Chrome packages
-        id: apt-cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            .apt-cache
-            !.apt-cache/lock
-            !.apt-cache/partial
-          key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-
-
-      - name: Install Chrome + Chromedriver (cached)
-        run: |
-          echo "google-chrome-stable" > apt-packages.txt
-          echo "chromium-chromedriver" >> apt-packages.txt
-
-          mkdir -p .apt-cache
-          sudo apt-get update
-          sudo apt-get -o dir::cache::archives="$(pwd)/.apt-cache" install --download-only -y $(cat apt-packages.txt)
-          sudo dpkg -i .apt-cache/*.deb || sudo apt-get -f install -y
-          sudo ln -sf /usr/bin/chromedriver /usr/local/bin/chromedriver
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run script
-        env:
-          GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
+    # Install Python dependencies
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        
+    # Set up and cache Chrome and ChromeDriver
+    - name: Set up Chrome
+      uses: browser-actions/setup-chrome@v2
+      with:
+        chrome-version: 'latest' # Or a specific version, e.g., '120'
+        install-chromedriver: true # Automatically installs a compatible ChromeDriver
+        
+    - name: Run tests with Selenium
+      run: |
+        # Example test command
+        # This will use the cached Chrome and ChromeDriver
         run: python scraper.py
