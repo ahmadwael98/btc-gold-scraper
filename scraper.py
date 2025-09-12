@@ -19,20 +19,18 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
 
+
 def get_driver():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless=new")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
+    chrome_path = os.getenv("CHROME_BIN", "/usr/bin/google-chrome")
+    driver_path = os.getenv("CHROMEDRIVER_BIN", "/usr/local/bin/chromedriver")
 
-    # Use Chromedriver from GitHub Actions environment
-    driver = webdriver.Chrome(
-        service=Service("/usr/local/bin/chromedriver"),
-        options=chrome_options
-    )
-    return driver
+    options = Options()
+    options.add_argument("--headless=new")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
 
+    service = Service(driver_path)
+    return webdriver.Chrome(service=service, options=options)
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
