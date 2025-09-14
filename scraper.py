@@ -142,7 +142,7 @@ def main():
         driver.get('https://sarf-today.com/currency/us_dollar/market')
         price_list = WebDriverWait(driver, 15).until(
         EC.presence_of_element_located((By.XPATH, "//div[@class='col-md-8 cur-info-container']"))).text
-
+        print(driver.page_source)
         blackmarket = price_list.split('\n')
         avgblackmarket = (float(blackmarket[3]) + float(blackmarket[5])) / 2
     except:
