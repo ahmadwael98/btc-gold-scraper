@@ -74,7 +74,7 @@ def main():
         search = WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.XPATH, "//td[@class='marker']")))
         
         #search = driver.find_elements(By.XPATH, "//td[@class='marker']")
-        print(driver.page_source)
+        #print(driver.page_source)
         for i in search:
             us.append(i.text)
         spliting = us[3].split('\n')
