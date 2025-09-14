@@ -29,10 +29,16 @@ def get_driver():
     options.binary_location = chrome_path
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-first-run")
+    options.add_argument("--no-default-browser-check")
+    options.add_argument("--disable-infobars")
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("--window-size=1920,1080")
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36")
+    
 
     if driver_path:
         service = Service(driver_path)
@@ -65,7 +71,10 @@ def main():
     try:
         driver.get('https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter')
         us = []
-        search = driver.find_elements(By.XPATH, "//td[@class='marker']")
+        search = WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.XPATH, "//td[@class='marker']")))
+        
+        #search = driver.find_elements(By.XPATH, "//td[@class='marker']")
+        print(driver.page_source)
         for i in search:
             us.append(i.text)
         spliting = us[3].split('\n')
