@@ -1,4 +1,3 @@
-
 import pandas as pd
 from bs4 import BeautifulSoup
 import requests
@@ -34,31 +33,32 @@ def get_driver():
     options.add_argument("--no-first-run")
     options.add_argument("--no-default-browser-check")
     options.add_argument("--disable-infobars")
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36")
+    options.add_argument(
+        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+    )
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("--window-size=1920,1080")
-    
 
     if driver_path:
         service = Service(driver_path)
         return webdriver.Chrome(service=service, options=options)
     else:
-        # fallback: let Selenium try to find chromedriver automatically
         return webdriver.Chrome(options=options)
+
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
+    "https://www.googleapis.com/auth/drive",
 ]
 
+
 def get_gspread_client():
-    # Load directly from JSON file in repo
     creds = Credentials.from_service_account_file(
         "btc-and-dollars-00c1ba00d853.json", scopes=SCOPES
     )
     client = gspread.authorize(creds)
     return client
+
 
 def main():
     driver = get_driver()
@@ -69,28 +69,43 @@ def main():
     # Dollar Price
     # =========================
     try:
-        driver.get('https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter')
-        us = []
-        search = WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.XPATH, "//td[@class='marker']")))
-        
-        #search = driver.find_elements(By.XPATH, "//td[@class='marker']")
-        #print(driver.page_source)
-        for i in search:
-            us.append(i.text)
-        spliting = us[3].split('\n')
-        Dollar_price = (spliting[0].split(' '))[1]
-        print("NBE")
+        # --- BS4 first ---
+        nbe_response = requests.get(
+            "https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter"
+        ).content
+        nbe_soup = BeautifulSoup(nbe_response, "html.parser")
+        table_cells = nbe_soup.find_all("td", {"class": "marker"})
+        us = [i.get_text(strip=True) for i in table_cells]
+
+        spliting = us[3].split("\n")
+        Dollar_price = (spliting[0].split(" "))[1]
+        print("NBE (BS4)")
     except:
         try:
-            driver.get('https://www.google.com')
-            search = driver.find_element(By.XPATH, "//input[@class='gLFyf']")
-            search.send_keys('dollar to egp')
-            search.send_keys(Keys.ENTER)
-            Dollar_price = driver.find_element(By.XPATH, "//span[@class='DFlfde SwHCTb']").text
-            print('Google')
+            # --- Selenium fallback ---
+            driver.get(
+                "https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter"
+            )
+            search = WebDriverWait(driver, 20).until(
+                EC.presence_of_all_elements_located((By.XPATH, "//td[@class='marker']"))
+            )
+            us = [i.text for i in search]
+            spliting = us[3].split("\n")
+            Dollar_price = (spliting[0].split(" "))[1]
+            print("NBE (Selenium)")
         except:
-            Dollar_price = 'Closed or Unreachable'
-            print('Dollar Closed')
+            try:
+                driver.get("https://www.google.com")
+                search = driver.find_element(By.XPATH, "//input[@class='gLFyf']")
+                search.send_keys("dollar to egp")
+                search.send_keys(Keys.ENTER)
+                Dollar_price = driver.find_element(
+                    By.XPATH, "//span[@class='DFlfde SwHCTb']"
+                ).text
+                print("Google")
+            except:
+                Dollar_price = "Closed or Unreachable"
+                print("Dollar Closed")
 
     print(Dollar_price)
 
@@ -98,9 +113,10 @@ def main():
     # Gold Prices
     # =========================
     try:
-        kerat_21_response = requests.get('https://market.isagha.com/prices').content
+        # --- BS4 first ---
+        kerat_21_response = requests.get("https://market.isagha.com/prices").content
         kerat_21_soup = BeautifulSoup(kerat_21_response, "html.parser")
-        kerat_21_span = kerat_21_soup.find_all('div', class_='value')
+        kerat_21_span = kerat_21_soup.find_all("div", class_="value")
 
         kerat = [i.text for i in kerat_21_span]
 
@@ -119,11 +135,12 @@ def main():
         Dollar_to_egp = round(Dollar_to_egp, 2)
         coin_price = round(coin_price)
         ounce_dollar = round(float(ounce_dollar))
-        print('Gold BS4')
+        print("Gold (BS4)")
 
     except:
         try:
-            driver.get('https://market.isagha.com/prices')
+            # --- Selenium fallback ---
+            driver.get("https://market.isagha.com/prices")
             search = driver.find_elements(By.XPATH, "//div[@class='value']")
             kerat_price = [i.text for i in search]
 
@@ -140,32 +157,54 @@ def main():
             Dollar_to_egp = round(Dollar_to_egp, 2)
             coin_price = round(coin_price)
             ounce_dollar = round(float(ounce_dollar))
-            print('Selenium')
+            print("Gold (Selenium)")
 
         except:
-            kerat_18_sell = kerat_21_sell = kerat_24_sell = 'Closed or Unreachable'
-            kerat_18_buy = kerat_21_buy = kerat_24_buy = 'Closed or Unreachable'
-            coin_price = 'Closed or Unreachable'
-            Dollar_to_egp = 'Closed or Unreachable'
-            ounce_dollar = 'Closed or Unreachable'
-            print('Gold closed')
+            kerat_18_sell = kerat_21_sell = kerat_24_sell = "Closed or Unreachable"
+            kerat_18_buy = kerat_21_buy = kerat_24_buy = "Closed or Unreachable"
+            coin_price = "Closed or Unreachable"
+            Dollar_to_egp = "Closed or Unreachable"
+            ounce_dollar = "Closed or Unreachable"
+            print("Gold Closed")
 
+    # =========================
+    # Black Market
+    # =========================
     try:
-        driver.get('https://sarf-today.com/currency/us_dollar/market')
-        price_list = WebDriverWait(driver, 15).until(
-        EC.presence_of_element_located((By.XPATH, "//div[@class='col-md-8 cur-info-container']"))).text
-        #print(driver.page_source)
-        blackmarket = price_list.split('\n')
+        # --- BS4 first ---
+        black_response = requests.get(
+            "https://sarf-today.com/currency/us_dollar/market"
+        ).content
+        black_soup = BeautifulSoup(black_response, "html.parser")
+        price_block = black_soup.find("div", class_="col-md-8 cur-info-container")
+        price_list = price_block.get_text("\n", strip=True)
+        blackmarket = price_list.split("\n")
         avgblackmarket = (float(blackmarket[3]) + float(blackmarket[5])) / 2
+        print("Black Market (BS4)")
     except:
-        avgblackmarket = 'Closed or Unreachable'
+        try:
+            # --- Selenium fallback ---
+            driver.get("https://sarf-today.com/currency/us_dollar/market")
+            price_list = WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//div[@class='col-md-8 cur-info-container']")
+                )
+            ).text
+            blackmarket = price_list.split("\n")
+            avgblackmarket = (float(blackmarket[3]) + float(blackmarket[5])) / 2
+            print("Black Market (Selenium)")
+        except:
+            avgblackmarket = "Closed or Unreachable"
+            print("Black Market Closed")
 
+    # =========================
+    # Save to Sheets
+    # =========================
     current_time = dt.datetime.now()
-
     data = [
         current_time.strftime("%Y-%m-%d"),
         current_time.strftime("%H:%M:%S"),
-        str(coin_price) + ' EGP',
+        str(coin_price) + " EGP",
         Dollar_price,
         kerat_18_buy,
         kerat_21_buy,
@@ -176,15 +215,15 @@ def main():
         ounce_dollar,
         Dollar_to_egp,
         avgblackmarket,
-        'GitHub'
+        "GitHub",
     ]
 
-    wks1 = spread_sheet.worksheet('Sheet1')
-    wks1.insert_row(values=data, index=2, value_input_option='RAW')
+    wks1 = spread_sheet.worksheet("Sheet1")
+    wks1.insert_row(values=data, index=2, value_input_option="RAW")
 
     print(data)
-    wks2 = spread_sheet.worksheet('Sheet2')
-    wks2.update('A2:N2', [data])
+    wks2 = spread_sheet.worksheet("Sheet2")
+    wks2.update("A2:N2", [data])
 
     driver.quit()
 
