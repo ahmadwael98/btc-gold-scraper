@@ -17,6 +17,8 @@ import json
 from google.oauth2.service_account import Credentials
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 def get_driver():
@@ -138,9 +140,8 @@ def main():
 
     try:
         driver.get('https://sarf-today.com/currency/us_dollar/market')
-            price_list = WebDriverWait(driver, 15).until(
-        EC.presence_of_element_located((By.XPATH, "//div[@class='col-md-8 cur-info-container']"))
-    ).text
+        price_list = WebDriverWait(driver, 15).until(
+        EC.presence_of_element_located((By.XPATH, "//div[@class='col-md-8 cur-info-container']"))).text
 
         blackmarket = price_list.split('\n')
         avgblackmarket = (float(blackmarket[3]) + float(blackmarket[5])) / 2
