@@ -51,13 +51,12 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-
 def get_gspread_client():
-    creds = Credentials.from_service_account_file(
-        "btc-and-dollars-00c1ba00d853.json", scopes=SCOPES
-    )
-    client = gspread.authorize(creds)
-    return client
+    service_account_info = json.loads(os.environ["GSPREAD_JSON"])
+    creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
+    return gspread.authorize(creds)
+
+
 
 
 def main():
