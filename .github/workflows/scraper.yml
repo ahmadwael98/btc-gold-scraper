@@ -7,6 +7,8 @@ on:
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
+    env:
+      GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
 
     steps:
       # Checkout repo
@@ -48,4 +50,6 @@ jobs:
 
       # Run your scraper
       - name: Run scraper
+        env:
+            GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
         run: python scraper.py
