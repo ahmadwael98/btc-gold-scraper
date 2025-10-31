@@ -30,7 +30,7 @@ jobs:
       - name: Set up Chrome
         uses: browser-actions/setup-chrome@v2
         with:
-          chrome-version: 140
+          chrome-version: 142
           install-chromedriver: true
       # Set system timezone to Egypt (Cairo)
       - name: Set timezone
