@@ -50,7 +50,7 @@ jobs:
       #debug scraper
       - name: Debug scraper
         run: |
-          python -c "from selenium import webdriver; from selenium.webdriver.chrome.options import Options; print('Selenium can start Chrome')"+++
+          python -c "from selenium import webdriver; from selenium.webdriver.chrome.options import Options; print('Selenium can start Chrome')"
       # Run your scraper (auto-stop after 180 seconds)
       - name: Run scraper
         env:
