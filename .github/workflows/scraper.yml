@@ -55,4 +55,5 @@ jobs:
       - name: Run scraper
         env:
           GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
-        run: timeout 180s python scraper.py
+          PYTHONUNBUFFERED: 1
+        run: python scraper.py
