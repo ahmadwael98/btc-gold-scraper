@@ -60,15 +60,18 @@ def get_gspread_client():
 
 
 def main():
+    print("test first in main")
     driver = get_driver()
     spread_api = get_gspread_client()
     spread_sheet = spread_api.open("BTC and Dollars")
+    print("spread done")
 
     # =========================
     # Dollar Price
     # =========================
     try:
         # --- BS4 first ---
+        print("NBE (BS4)")
         nbe_response = requests.get("https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter", timeout=15).content
         nbe_soup = BeautifulSoup(nbe_response, "html.parser")
         table_cells = nbe_soup.find_all("td", {"class": "marker"})
@@ -80,6 +83,7 @@ def main():
     except:
         try:
             # --- Selenium fallback ---
+            print("NBE (Selenium)")
             driver.get(
                 "https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter"
             )
@@ -92,6 +96,7 @@ def main():
             print("NBE (Selenium)")
         except:
             try:
+                print("Google")
                 driver.get("https://www.google.com")
                 search = driver.find_element(By.XPATH, "//input[@class='gLFyf']")
                 search.send_keys("dollar to egp")
@@ -111,6 +116,7 @@ def main():
     # =========================
     try:
         # --- BS4 first ---
+        print("Gold (BS4)")
         kerat_21_response = requests.get("https://market.isagha.com/prices", timeout=15).content
         kerat_21_soup = BeautifulSoup(kerat_21_response, "html.parser")
         kerat_21_span = kerat_21_soup.find_all("div", class_="value")
@@ -137,6 +143,7 @@ def main():
     except:
         try:
             # --- Selenium fallback ---
+            print("Gold (Selenium)")
             driver.get("https://market.isagha.com/prices")
             search = driver.find_elements(By.XPATH, "//div[@class='value']")
             kerat_price = [i.text for i in search]
@@ -169,6 +176,7 @@ def main():
     # =========================
     try:
         # --- BS4 first ---
+        print("Black Market (BS4)")
         black_response = requests.get("https://sarf-today.com/currency/us_dollar/market",timeout=15).content
         black_soup = BeautifulSoup(black_response, "html.parser")
         price_block = black_soup.find("div", class_="col-md-8 cur-info-container")
@@ -178,6 +186,7 @@ def main():
         print("Black Market (BS4)")
     except:
         try:
+            print("Black Market (Selenium)")
             # --- Selenium fallback ---
             driver.get("https://sarf-today.com/currency/us_dollar/market")
             price_list = WebDriverWait(driver, 15).until(
