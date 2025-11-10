@@ -21,29 +21,9 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 def get_driver():
-    chrome_path = os.getenv("CHROME_BIN", "/usr/bin/google-chrome")
-    driver_path = os.getenv("CHROMEDRIVER_BIN", None)
-
-    options = Options()
-    options.binary_location = chrome_path
-    options.add_argument("--headless=new")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-first-run")
-    options.add_argument("--no-default-browser-check")
-    options.add_argument("--disable-infobars")
-    options.add_argument(
-        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
-    )
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--window-size=1920,1080")
-
-    if driver_path:
-        service = Service(driver_path)
-        return webdriver.Chrome(service=service, options=options)
-    else:
-        return webdriver.Chrome(options=options)
+    path = "C:/Program Files (x86)/chromedriver.exe"
+    driver = webdriver.Chrome()
+    return driver
 
 
 SCOPES = [
@@ -51,10 +31,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-def get_gspread_client():
-    service_account_info = json.loads(os.environ["GSPREAD_JSON"])
-    creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
-    return gspread.authorize(creds)
+
 
 
 
@@ -62,9 +39,7 @@ def get_gspread_client():
 def main():
     print("test first in main")
     driver = get_driver()
-    spread_api = get_gspread_client()
-    spread_sheet = spread_api.open("BTC and Dollars")
-    print("spread done")
+#
 
     # =========================
     # Dollar Price
@@ -222,13 +197,8 @@ def main():
         "GitHub",
     ]
 
-    wks1 = spread_sheet.worksheet("Sheet1")
-    wks1.insert_row(values=data, index=2, value_input_option="RAW")
 
     print(data)
-    wks2 = spread_sheet.worksheet("Sheet2")
-    wks2.update("A2:N2", [data])
-
     driver.quit()
 
 
