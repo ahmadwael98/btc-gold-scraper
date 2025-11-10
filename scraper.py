@@ -69,9 +69,7 @@ def main():
     # =========================
     try:
         # --- BS4 first ---
-        nbe_response = requests.get(
-            "https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter"
-        ).content
+        nbe_response = requests.get("https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter", timeout=15).content
         nbe_soup = BeautifulSoup(nbe_response, "html.parser")
         table_cells = nbe_soup.find_all("td", {"class": "marker"})
         us = [i.get_text(strip=True) for i in table_cells]
@@ -113,7 +111,7 @@ def main():
     # =========================
     try:
         # --- BS4 first ---
-        kerat_21_response = requests.get("https://market.isagha.com/prices").content
+        kerat_21_response = requests.get("https://market.isagha.com/prices", timeout=15).content
         kerat_21_soup = BeautifulSoup(kerat_21_response, "html.parser")
         kerat_21_span = kerat_21_soup.find_all("div", class_="value")
 
@@ -171,9 +169,7 @@ def main():
     # =========================
     try:
         # --- BS4 first ---
-        black_response = requests.get(
-            "https://sarf-today.com/currency/us_dollar/market"
-        ).content
+        black_response = requests.get("https://sarf-today.com/currency/us_dollar/market",timeout=15).content
         black_soup = BeautifulSoup(black_response, "html.parser")
         price_block = black_soup.find("div", class_="col-md-8 cur-info-container")
         price_list = price_block.get_text("\n", strip=True)
