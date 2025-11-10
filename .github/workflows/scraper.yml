@@ -48,8 +48,9 @@ jobs:
           google-chrome --version
           chromedriver --version
 
-      # Run your scraper
+
+      # Run your scraper (auto-stop after 180 seconds)
       - name: Run scraper
         env:
-            GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
-        run: python scraper.py
+          GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
+        run: timeout 180s python scraper.py
