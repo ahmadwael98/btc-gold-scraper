@@ -224,4 +224,6 @@ def main():
 
 
 if __name__ == "__main__":
+    print(">>> Starting scraper...")
     main()
+    print(">>> Finished scraper.")
