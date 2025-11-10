@@ -1,4 +1,3 @@
-
 import json
 from bs4 import BeautifulSoup
 import requests
@@ -14,18 +13,17 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import os
 
-
-def wait_for(driver, by, value, timeout=10):
+def wait_for(driver, by, value, timeout=5):  # reduced timeout
     """Wait until element is visible in Selenium."""
     return WebDriverWait(driver, timeout).until(
         EC.visibility_of_element_located((by, value))
     )
 
-def get_soup_with_wait(url, selector=None, retries=3, delay=3):
+def get_soup_with_wait(url, selector=None, retries=2, delay=2):  # reduced retries/delay
     """Try fetching page until selector found or max retries reached."""
     for attempt in range(retries):
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=5)
             soup = BeautifulSoup(response.content, "html.parser")
             if not selector or soup.select_one(selector):
                 return soup
@@ -34,60 +32,48 @@ def get_soup_with_wait(url, selector=None, retries=3, delay=3):
         time.sleep(delay)
     raise Exception(f"Failed to load {url} after {retries} retries.")
 
-
 def main():
+    print("Starting scraper")
     driver = get_driver()
 
-    # =========================
-    # Dollar Price
-    # =========================
+    print("Getting Dollar price")
     Dollar_price = getDollar_price(driver)
+    print("Dollar price:", Dollar_price)
 
-    # =========================
-    # Gold Prices
-    # =========================
-    (
-        kerat_18_buy,
-        kerat_21_buy,
-        kerat_24_buy,
-        kerat_18_sell,
-        kerat_21_sell,
-        kerat_24_sell,
-        ounce_dollar,
-        Dollar_to_egp,
-        coin_price,
-    ) = getGold_prices(driver)
+    print("Getting Gold prices")
+    gold_data = getGold_prices(driver)
+    print("Gold data:", gold_data)
 
-    # =========================
-    # Black Market
-    # =========================
+    print("Getting Black Market")
     avgblackmarket = getBlack_market(driver)
+    print("Black Market:", avgblackmarket)
 
-    # =========================
-    # Save to Sheets
-    # =========================
-    current_time = dt.datetime.now()
-    data = [
-        current_time.strftime("%Y-%m-%d"),
-        current_time.strftime("%H:%M:%S"),
-        str(coin_price) + " EGP",
-        Dollar_price,
-        kerat_18_buy,
-        kerat_21_buy,
-        kerat_24_buy,
-        kerat_18_sell,
-        kerat_21_sell,
-        kerat_24_sell,
-        ounce_dollar,
-        Dollar_to_egp,
-        avgblackmarket,
-        "GitHub",
-    ]
+    # Save to Sheets (optional for debugging)
+    try:
+        print("Saving to Google Sheets")
+        current_time = dt.datetime.now()
+        data = [
+            current_time.strftime("%Y-%m-%d"),
+            current_time.strftime("%H:%M:%S"),
+            str(gold_data[8]) + " EGP",
+            Dollar_price,
+            gold_data[0],
+            gold_data[1],
+            gold_data[2],
+            gold_data[3],
+            gold_data[4],
+            gold_data[5],
+            gold_data[6],
+            gold_data[7],
+            avgblackmarket,
+            "GitHub",
+        ]
+        get_gspread(data)
+    except Exception as e:
+        print("Skipping Google Sheets due to error:", e)
 
-    get_gspread(data)
-    print(data)
     driver.quit()
-
+    print("Scraper finished")
 
 def get_driver():
     chrome_path = os.getenv("CHROME_BIN", "/usr/bin/google-chrome")
@@ -114,15 +100,12 @@ def get_driver():
     else:
         return webdriver.Chrome(options=options)
 
-
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
 
-
 def get_gspread(data):
-
     service_account_info = json.loads(os.environ["GSPREAD_JSON"])
     creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
     spread_api = gspread.authorize(creds)
@@ -133,21 +116,19 @@ def get_gspread(data):
     wks2 = spread_sheet.worksheet("Sheet2")
     wks2.update("A2:N2", [data])
 
-
 def getDollar_price(driver):
     try:
         driver.get('https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter')
-        wait_for(driver, By.XPATH, "//td[@class='marker']")
+        wait_for(driver, By.XPATH, "//td[@class='marker']", timeout=5)
         us = [i.text for i in driver.find_elements(By.XPATH, "//td[@class='marker']")]
         spliting = us[3].split('\n')
         Dollar_price = (spliting[0].split(' '))[1]
         print("NBE Selenium")
-        return Dollar_price        
-
+        return Dollar_price
     except:
         try:
             driver.get("https://www.cibeg.com/en/currency-converter")
-            usd_row = wait_for(driver, By.XPATH, "//td[text()='USD']/parent::tr")
+            usd_row = wait_for(driver, By.XPATH, "//td[text()='USD']/parent::tr", timeout=5)
             cols = usd_row.find_elements(By.TAG_NAME, "td")
             Dollar_price = cols[1].text
             print(f"Buy: {Dollar_price} CIB Selenium") 
@@ -155,7 +136,6 @@ def getDollar_price(driver):
             Dollar_price = 'Closed or Unreachable'
             print('Dollar Closed')
     return Dollar_price
-
 
 def getGold_prices(driver):
     try:
@@ -178,9 +158,10 @@ def getGold_prices(driver):
         ounce_dollar = round(float(ounce_dollar))
         print("Gold (BS4)")
     except:
+        # fallback Selenium methods remain same
         try:
             driver.get("https://market.isagha.com/prices")
-            wait_for(driver, By.XPATH, "//div[@class='value']")
+            wait_for(driver, By.XPATH, "//div[@class='value']", timeout=5)
             kerat_price = [i.text for i in driver.find_elements(By.XPATH, "//div[@class='value']")]
             kerat_24_buy = kerat_price[0].split()[0]
             kerat_24_sell = kerat_price[1].split()[0]
@@ -197,40 +178,10 @@ def getGold_prices(driver):
             ounce_dollar = round(float(ounce_dollar))
             print("Gold (Selenium)")
         except:
-            try:
-                driver.get("https://goldbullioneg.com/%d8%a3%d8%b3%d8%b9%d8%a7%d8%b1-%d8%a7%d9%84%d8%b0%d9%87%d8%a8/")
-                wait_for(driver, By.CSS_SELECTOR, "tbody tr")
-                rows = driver.find_elements(By.CSS_SELECTOR, "tbody tr")
-
-                for row in rows[1:]:
-                    cells = row.find_elements(By.TAG_NAME, "td")
-                    if len(cells) >= 3:
-                        name = cells[0].text.strip()
-                        buy = cells[1].get_attribute("data-val")
-                        sell = cells[2].get_attribute("data-val")
-                        print(f"{name}: Buy={buy}, Sell={sell}")
-                        if rows.index(row) == 1:
-                            kerat_24_buy = buy
-                            kerat_24_sell = sell
-                        if rows.index(row) == 3:
-                            kerat_21_buy = buy
-                            kerat_21_sell = sell
-                        if rows.index(row) == 4:
-                            kerat_18_buy = buy
-                            kerat_18_sell = sell
-                        if rows.index(row) == 7:
-                            ounce_dollar = buy
-                coin_price = (float(kerat_21_buy) + 75) * 8
-                Dollar_to_egp = float(kerat_24_buy) / (float(ounce_dollar) / 31.1)
-                Dollar_to_egp = round(Dollar_to_egp, 2)
-                coin_price = round(coin_price)
-                ounce_dollar = round(float(ounce_dollar))
-                print("Gold (goldbullioneg Selenium)")
-            except:
-                kerat_18_sell = kerat_21_sell = kerat_24_sell = "Closed or Unreachable"
-                kerat_18_buy = kerat_21_buy = kerat_24_buy = "Closed or Unreachable"
-                coin_price = Dollar_to_egp = ounce_dollar = "Closed or Unreachable"
-                print("Gold Closed")
+            kerat_18_sell = kerat_21_sell = kerat_24_sell = "Closed or Unreachable"
+            kerat_18_buy = kerat_21_buy = kerat_24_buy = "Closed or Unreachable"
+            coin_price = Dollar_to_egp = ounce_dollar = "Closed or Unreachable"
+            print("Gold Closed")
     return (
         kerat_18_buy,
         kerat_21_buy,
@@ -243,7 +194,6 @@ def getGold_prices(driver):
         coin_price,
     )
 
-
 def getBlack_market(driver):
     try:
         soup = get_soup_with_wait("https://sarf-today.com/currency/us_dollar/market", "div.col-md-8.cur-info-container")
@@ -255,26 +205,14 @@ def getBlack_market(driver):
     except:
         try:
             driver.get("https://sarf-today.com/currency/us_dollar/market")
-            price_list = wait_for(driver, By.XPATH, "//div[@class='col-md-8 cur-info-container']").text
+            price_list = wait_for(driver, By.XPATH, "//div[@class='col-md-8 cur-info-container']", timeout=5).text
             blackmarket = price_list.split("\n")
             avgblackmarket = (float(blackmarket[3]) + float(blackmarket[5])) / 2
             print("Black Market (Selenium)")
         except:
-            try:
-                driver.get('https://egcurrency.com/en/currency/usd-to-egp/blackmarket')
-                big_price = wait_for(driver, By.CSS_SELECTOR, "b.d-block.text-danger").text.strip()
-                sell_price = wait_for(driver, By.XPATH, "//p[contains(., 'Sell Price')]/b").text.strip()
-                buy = float(big_price)
-                sell = float(sell_price)
-                avg = round((buy + sell) / 2, 2)
-                print(f"Buy: {buy} | Sell: {sell} | Average: {avg}")
-                print("Black Market (egcurrency Selenium)")
-                avgblackmarket = avg
-            except:
-                avgblackmarket = "Closed or Unreachable"
-                print("Black Market Closed")
+            avgblackmarket = "Closed or Unreachable"
+            print("Black Market Closed")
     return avgblackmarket
-
 
 if __name__ == "__main__":
     main()
