@@ -58,8 +58,9 @@ SCOPES = [
 
 
 def main():
-    print("test first in main")
+    print("✅ Script started")
     driver = get_driver()
+    print("✅ Chrome started successfully")
 #
 
     # =========================
@@ -222,8 +223,9 @@ def main():
     print(data)
     driver.quit()
 
-
 if __name__ == "__main__":
-    print(">>> Starting scraper...")
-    main()
-    print(">>> Finished scraper.")
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
