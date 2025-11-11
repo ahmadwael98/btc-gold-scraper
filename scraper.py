@@ -109,6 +109,12 @@ SCOPES = [
 def getDollar_price(driver):
     print("getdollar")
     try:
+            print("cib")
+            driver.get("https://www.cibeg.com/en/currency-converter")
+            usd_row = wait_for(driver, By.XPATH, "//td[text()='USD']/parent::tr", timeout=5)
+            cols = usd_row.find_elements(By.TAG_NAME, "td")
+            Dollar_price = cols[1].text
+            print(f"Buy: {Dollar_price} CIB Selenium") 
             # --- Selenium fallback ---
             driver.get(
                 "https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter"
