@@ -68,7 +68,7 @@ def main():
             avgblackmarket,
             "GitHub",
         ]
-       
+        get_gspread(data)
     except Exception as e:
         print("Skipping Google Sheets due to error:", e)
 
@@ -105,27 +105,28 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
+def get_gspread(data):
+    service_account_info = json.loads(os.environ["GSPREAD_JSON"])
+    creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
+    spread_api = gspread.authorize(creds)
+    spread_sheet = spread_api.open("BTC and Dollars")
+    wks1 = spread_sheet.worksheet("Sheet1")
+    wks1.insert_row(values=data, index=2, value_input_option="RAW")
+    print(data)
+    wks2 = spread_sheet.worksheet("Sheet2")
+    wks2.update("A2:N2", [data])
 
 def getDollar_price(driver):
-    print("getdollar")
     try:
-            print("cib")
-            driver.get("https://www.cibeg.com/en/currency-converter")
-            usd_row = wait_for(driver, By.XPATH, "//td[text()='USD']/parent::tr", timeout=5)
-            cols = usd_row.find_elements(By.TAG_NAME, "td")
-            Dollar_price = cols[1].text
-            print(f"Buy: {Dollar_price} CIB Selenium") 
-            # --- Selenium fallback ---
-            driver.get(
-                "https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter"
-            )
-            search = WebDriverWait(driver, 20).until(
-                EC.presence_of_all_elements_located((By.XPATH, "//td[@class='marker']"))
-            )
-            us = [i.text for i in search]
-            spliting = us[3].split("\n")
-            Dollar_price = (spliting[0].split(" "))[1]
-            print("NBE (Selenium)")
+        driver.set_page_load_timeout(15)  # ⏱ Stop if page takes more than 15 seconds
+        driver.get('https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter')
+
+        wait_for(driver, By.XPATH, "//td[@class='marker']", timeout=10)
+        us = [i.text for i in driver.find_elements(By.XPATH, "//td[@class='marker']")]
+        spliting = us[3].split('\n')
+        Dollar_price = (spliting[0].split(' '))[1]
+        print("NBE Selenium")
+        return Dollar_price
     except:
         try:
             driver.get("https://www.cibeg.com/en/currency-converter")
