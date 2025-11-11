@@ -107,14 +107,19 @@ SCOPES = [
 
 
 def getDollar_price(driver):
+    print("getdollar")
     try:
-        driver.get('https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter')
-        wait_for(driver, By.XPATH, "//td[@class='marker']", timeout=5)
-        us = [i.text for i in driver.find_elements(By.XPATH, "//td[@class='marker']")]
-        spliting = us[3].split('\n')
-        Dollar_price = (spliting[0].split(' '))[1]
-        print("NBE Selenium")
-        return Dollar_price
+            # --- Selenium fallback ---
+            driver.get(
+                "https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter"
+            )
+            search = WebDriverWait(driver, 20).until(
+                EC.presence_of_all_elements_located((By.XPATH, "//td[@class='marker']"))
+            )
+            us = [i.text for i in search]
+            spliting = us[3].split("\n")
+            Dollar_price = (spliting[0].split(" "))[1]
+            print("NBE (Selenium)")
     except:
         try:
             driver.get("https://www.cibeg.com/en/currency-converter")
