@@ -2,8 +2,8 @@ name: Run BTC Scraper (Stable Chrome)
 
 on:
   workflow_dispatch:
-  #schedule:
-    #- cron: "51 * * * *"   # Every hour at the start of the hour
+  schedule:
+    - cron: "51 * * * *"   # Every hour at the start of the hour
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
@@ -57,3 +57,4 @@ jobs:
           GSPREAD_JSON: ${{ secrets.GSPREAD_JSON }}
           PYTHONUNBUFFERED: 1
         run: python scraper.py
+        timeout-minutes: 3
