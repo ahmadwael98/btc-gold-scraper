@@ -118,22 +118,23 @@ def get_gspread(data):
 
 def getDollar_price(driver):
     try:
-        driver.set_page_load_timeout(15)  # ⏱ Stop if page takes more than 15 seconds
-        driver.get('https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter')
-
-        wait_for(driver, By.XPATH, "//td[@class='marker']", timeout=10)
-        us = [i.text for i in driver.find_elements(By.XPATH, "//td[@class='marker']")]
-        spliting = us[3].split('\n')
-        Dollar_price = (spliting[0].split(' '))[1]
-        print("NBE Selenium")
-        return Dollar_price
+        driver.get("https://www.cibeg.com/en/currency-converter")
+        usd_row = wait_for(driver, By.XPATH, "//td[text()='USD']/parent::tr", timeout=5)
+        cols = usd_row.find_elements(By.TAG_NAME, "td")
+        Dollar_price = cols[1].text
+        print(f"Buy: {Dollar_price} CIB Selenium") 
     except:
         try:
-            driver.get("https://www.cibeg.com/en/currency-converter")
-            usd_row = wait_for(driver, By.XPATH, "//td[text()='USD']/parent::tr", timeout=5)
-            cols = usd_row.find_elements(By.TAG_NAME, "td")
-            Dollar_price = cols[1].text
-            print(f"Buy: {Dollar_price} CIB Selenium") 
+            driver.set_page_load_timeout(15)  # ⏱ Stop if page takes more than 15 seconds
+            driver.get('https://www.nbe.com.eg/NBE/E/#/EN/ExchangeRatesAndCurrencyConverter')
+
+            wait_for(driver, By.XPATH, "//td[@class='marker']", timeout=10)
+            us = [i.text for i in driver.find_elements(By.XPATH, "//td[@class='marker']")]
+            spliting = us[3].split('\n')
+            Dollar_price = (spliting[0].split(' '))[1]
+            print("NBE Selenium")
+            return Dollar_price
+
         except:
             Dollar_price = 'Closed or Unreachable'
             print('Dollar Closed')
