@@ -185,6 +185,22 @@ def getGold_prices(driver):
             kerat_18_buy = kerat_21_buy = kerat_24_buy = "Closed or Unreachable"
             coin_price = Dollar_to_egp = ounce_dollar = "Closed or Unreachable"
             print("Gold Closed")
+    try:
+        driver.get('https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD')
+        element = WebDriverWait(driver, 20).until(
+            EC.visibility_of_element_located((By.XPATH, "//span[@class='buttonText-hw_3o_pb']"))
+        )
+        ounce_dollar_raw = element.text
+        print("Raw value:", ounce_dollar_raw)
+
+        # Convert to float safely
+        ounce_dollar = round(float(ounce_dollar_raw.replace(",", "")))
+        Dollar_to_egp = float(kerat_24_buy) / (float(ounce_dollar) / 31.1)
+        Dollar_to_egp = round(Dollar_to_egp, 2)
+
+        print("Ounce Dollar (Selenium) TradingView:", ounce_dollar)
+    except:
+        pass
     return (
         kerat_18_buy,
         kerat_21_buy,
