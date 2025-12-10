@@ -163,6 +163,7 @@ def getGold_prices(driver):
     except:
         # fallback Selenium methods remain same
         try:
+            print("trying gold isagha selenium")
             driver.get("https://market.isagha.com/prices")
             wait_for(driver, By.XPATH, "//div[@class='value']", timeout=5)
             kerat_price = [i.text for i in driver.find_elements(By.XPATH, "//div[@class='value']")]
