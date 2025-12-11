@@ -142,50 +142,90 @@ def getDollar_price(driver):
 
 def getGold_prices(driver):
     try:
-        soup = get_soup_with_wait("https://market.isagha.com/prices", "div.value")
-        kerat_21_span = soup.find_all("div", class_="value")
-        kerat = [i.text for i in kerat_21_span]
 
-        kerat_24_buy = kerat[0].split()[0]
-        kerat_24_sell = kerat[1].split()[0]
-        kerat_21_buy = kerat[6].split()[0]
-        kerat_21_sell = kerat[7].split()[0]
-        kerat_18_buy = kerat[9].split()[0]
-        kerat_18_sell = kerat[10].split()[0]
-        ounce_dollar = kerat[24].split()[0]
+        driver.get('https://goldbullioneg.com/%d8%a3%d8%b3%d8%b9%d8%a7%d8%b1-%d8%a7%d9%84%d8%b0%d9%87%d8%a8/')
+        rows = driver.find_elements(By.CSS_SELECTOR, "tbody tr")
 
+        data = []
+
+        for row in rows:
+            cols = row.find_elements(By.TAG_NAME, "td")
+            if len(cols) < 3:
+                continue
+            
+            item_name = cols[0].text.strip()
+
+            # Extract buy and sell (from data-val)
+            buy = cols[1].get_attribute("data-val")
+            sell = cols[2].get_attribute("data-val")
+
+            # --- Match Gold Types ---
+            if "عيار 24" in item_name:
+                kerat_24_buy = float(buy)
+                kerat_24_sell = float(sell)
+
+            elif "عيار 21" in item_name:
+                kerat_21_buy = float(buy)
+                kerat_21_sell = float(sell)
+
+            elif "عيار 18" in item_name:
+                kerat_18_buy = float(buy)
+                kerat_18_sell = float(sell)
+            
         coin_price = (float(kerat_21_buy) + 75) * 8
-        Dollar_to_egp = float(kerat_24_buy) / (float(ounce_dollar) / 31.1)
-        Dollar_to_egp = round(Dollar_to_egp, 2)
+
         coin_price = round(coin_price)
-        ounce_dollar = round(float(ounce_dollar))
-        print("Gold (BS4)")
+        #ounce_dollar = round(float(ounce_dollar))
+        print("GoldBullion (Selenium)")
+        # Print results
+        print("Buy 24:", kerat_24_buy, "Sell 24:", kerat_24_sell)
+        print("Buy 21:", kerat_21_buy, "Sell 21:", kerat_21_sell)
+        print("Buy 18:", kerat_18_buy, "Sell 18:", kerat_18_sell)
     except:
-        # fallback Selenium methods remain same
         try:
-            print("trying gold isagha selenium")
-            driver.get("https://market.isagha.com/prices")
-            wait_for(driver, By.XPATH, "//div[@class='value']", timeout=5)
-            kerat_price = [i.text for i in driver.find_elements(By.XPATH, "//div[@class='value']")]
-            kerat_24_buy = kerat_price[0].split()[0]
-            kerat_24_sell = kerat_price[1].split()[0]
-            kerat_21_buy = kerat_price[6].split()[0]
-            kerat_21_sell = kerat_price[7].split()[0]
-            kerat_18_buy = kerat_price[9].split()[0]
-            kerat_18_sell = kerat_price[10].split()[0]
-            ounce_dollar = kerat_price[24].split()[0]
+            soup = get_soup_with_wait("https://market.isagha.com/prices", "div.value")
+            kerat_21_span = soup.find_all("div", class_="value")
+            kerat = [i.text for i in kerat_21_span]
+
+            kerat_24_buy = kerat[0].split()[0]
+            kerat_24_sell = kerat[1].split()[0]
+            kerat_21_buy = kerat[6].split()[0]
+            kerat_21_sell = kerat[7].split()[0]
+            kerat_18_buy = kerat[9].split()[0]
+            kerat_18_sell = kerat[10].split()[0]
+            ounce_dollar = kerat[24].split()[0]
 
             coin_price = (float(kerat_21_buy) + 75) * 8
             Dollar_to_egp = float(kerat_24_buy) / (float(ounce_dollar) / 31.1)
             Dollar_to_egp = round(Dollar_to_egp, 2)
             coin_price = round(coin_price)
             ounce_dollar = round(float(ounce_dollar))
-            print("Gold (Selenium)")
+            print("Gold (BS4)")
         except:
-            kerat_18_sell = kerat_21_sell = kerat_24_sell = "Closed or Unreachable"
-            kerat_18_buy = kerat_21_buy = kerat_24_buy = "Closed or Unreachable"
-            coin_price = Dollar_to_egp = ounce_dollar = "Closed or Unreachable"
-            print("Gold Closed")
+        # fallback Selenium methods remain same
+            try:
+                driver.get("https://market.isagha.com/prices")
+                wait_for(driver, By.XPATH, "//div[@class='value']", timeout=5)
+                kerat_price = [i.text for i in driver.find_elements(By.XPATH, "//div[@class='value']")]
+                kerat_24_buy = kerat_price[0].split()[0]
+                kerat_24_sell = kerat_price[1].split()[0]
+                kerat_21_buy = kerat_price[6].split()[0]
+                kerat_21_sell = kerat_price[7].split()[0]
+                kerat_18_buy = kerat_price[9].split()[0]
+                kerat_18_sell = kerat_price[10].split()[0]
+                ounce_dollar = kerat_price[24].split()[0]
+
+                coin_price = (float(kerat_21_buy) + 75) * 8
+                Dollar_to_egp = float(kerat_24_buy) / (float(ounce_dollar) / 31.1)
+                Dollar_to_egp = round(Dollar_to_egp, 2)
+                coin_price = round(coin_price)
+                ounce_dollar = round(float(ounce_dollar))
+                print("Gold (Selenium)")
+            except:
+                kerat_18_sell = kerat_21_sell = kerat_24_sell = "Closed or Unreachable"
+                kerat_18_buy = kerat_21_buy = kerat_24_buy = "Closed or Unreachable"
+                coin_price = Dollar_to_egp = ounce_dollar = "Closed or Unreachable"
+                print("Gold Closed")
     try:
         driver.get('https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD')
         element = WebDriverWait(driver, 20).until(
@@ -201,6 +241,7 @@ def getGold_prices(driver):
 
         print("Ounce Dollar (Selenium) TradingView:", ounce_dollar)
     except:
+        ounce_dollar = "Closed or Unreachable"
         pass
     return (
         kerat_18_buy,
