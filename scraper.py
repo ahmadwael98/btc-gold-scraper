@@ -242,6 +242,7 @@ def getGold_prices(driver):
         print("Ounce Dollar (Selenium) TradingView:", ounce_dollar)
     except:
         ounce_dollar = "Closed or Unreachable"
+        Dollar_to_egp = "Closed or Unreachable"
         pass
     return (
         kerat_18_buy,
