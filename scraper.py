@@ -171,6 +171,11 @@ def getGold_prices(driver):
             elif "عيار 18" in item_name:
                 kerat_18_buy = float(buy)
                 kerat_18_sell = float(sell)
+            elif "الأونصة" in item_name:
+                ounce_dollar = round(float(buy))
+                Dollar_to_egp = float(kerat_24_buy) / (float(ounce_dollar) / 31.1)
+                Dollar_to_egp = round(Dollar_to_egp, 2)
+ 
             
         coin_price = (float(kerat_21_buy) + 75) * 8
 
@@ -181,6 +186,11 @@ def getGold_prices(driver):
         print("Buy 24:", kerat_24_buy, "Sell 24:", kerat_24_sell)
         print("Buy 21:", kerat_21_buy, "Sell 21:", kerat_21_sell)
         print("Buy 18:", kerat_18_buy, "Sell 18:", kerat_18_sell)
+        print("Ounce Dollar:", ounce_dollar)
+        print("Dollar to EGP:", Dollar_to_egp)
+        print("Coin Price:", coin_price)
+        print("gold bullion done")
+        
     except:
         try:
             soup = get_soup_with_wait("https://market.isagha.com/prices", "div.value")
@@ -229,7 +239,7 @@ def getGold_prices(driver):
     try:
         driver.get('https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD')
         element = WebDriverWait(driver, 20).until(
-            EC.visibility_of_element_located((By.XPATH, "//span[@class='buttonText-hw_3o_pb']"))
+            EC.visibility_of_element_located((By.XPATH, "//span[@class='buttonText-SXMXfs_Z']"))
         )
         ounce_dollar_raw = element.text
         print("Raw value:", ounce_dollar_raw)
