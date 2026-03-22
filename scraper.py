@@ -171,16 +171,7 @@ def getGold_prices(driver):
             elif "عيار 18" in item_name:
                 kerat_18_buy = float(buy)
                 kerat_18_sell = float(sell)
-            elif "الأونصة" in item_name:
-                ounce_dollar = round(float(buy))
-                Dollar_to_egp = float(kerat_24_buy) / (float(ounce_dollar) / 31.1)
-                Dollar_to_egp = round(Dollar_to_egp, 2)
- 
             
-        coin_price = (float(kerat_21_buy) + 75) * 8
-
-        coin_price = round(coin_price)
-        #ounce_dollar = round(float(ounce_dollar))
         print("GoldBullion (Selenium)")
         # Print results
         print("Buy 24:", kerat_24_buy, "Sell 24:", kerat_24_sell)
