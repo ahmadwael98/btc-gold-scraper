@@ -177,9 +177,7 @@ def getGold_prices(driver):
         print("Buy 24:", kerat_24_buy, "Sell 24:", kerat_24_sell)
         print("Buy 21:", kerat_21_buy, "Sell 21:", kerat_21_sell)
         print("Buy 18:", kerat_18_buy, "Sell 18:", kerat_18_sell)
-        print("Ounce Dollar:", ounce_dollar)
-        print("Dollar to EGP:", Dollar_to_egp)
-        print("Coin Price:", coin_price)
+      
         print("gold bullion done")
         
     except:
