@@ -171,13 +171,14 @@ def getGold_prices(driver):
             elif "عيار 18" in item_name:
                 kerat_18_buy = float(buy)
                 kerat_18_sell = float(sell)
-            
+
+        coin_price = (float(kerat_21_buy) + 75) * 8
         print("GoldBullion (Selenium)")
         # Print results
         print("Buy 24:", kerat_24_buy, "Sell 24:", kerat_24_sell)
         print("Buy 21:", kerat_21_buy, "Sell 21:", kerat_21_sell)
         print("Buy 18:", kerat_18_buy, "Sell 18:", kerat_18_sell)
-      
+        print("coin_price: ", coin_price)
         print("gold bullion done")
         
     except:
