@@ -229,7 +229,7 @@ def getGold_prices(driver):
     try:
         driver.get('https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD')
         element = WebDriverWait(driver, 20).until(
-            EC.visibility_of_element_located((By.XPATH, "//span[@class='buttonText-SXMXfs_Z']"))
+            EC.visibility_of_element_located((By.XPATH, "//span[@class='buttonText-OH8c8Nc3']"))
         )
         ounce_dollar_raw = element.text
         print("Raw value:", ounce_dollar_raw)
